@@ -9,10 +9,11 @@ export class GoHighLevelCreateTaskAction extends GoHighLevelAction {
 
   async execute(): Promise<GoHighLevelActionResponse> {
     try {
+      console.log(`GoHighLevelCreateTaskAction.execute - start, contactId = ${this.goHighLevelContext.contact.id}`);
       const currentTime = new Date().getTime();
       const taskData = {
         "title": `Customer Voicemail Message`,
-        "dueDate": (new Date(currentTime + 2 * 60 * 60 * 1000)).toISOString(),
+        "dueDate": ((new Date(currentTime + 2 * 60 * 60 * 1000)).toISOString().split('.')[0])+"Z",
         "description": this.goHighLevelContext.description,
         "assignedTo": '',
         "status": 'incompleted'
@@ -28,10 +29,10 @@ export class GoHighLevelCreateTaskAction extends GoHighLevelAction {
           'Authorization': `Bearer ${this.goHighLevelContext.apiKey}`
         }
       });
-      console.log(`Create Task - response = ${JSON.stringify(data)}`);
+      console.log(`GoHighLevelCreateTaskAction.execute - success, response = ${JSON.stringify(data)}`);
       return new GoHighLevelActionResponse('200', data);
     } catch (error) {
-      console.log(`Create Task failed, error - ${error}`);
+      console.log(`GoHighLevelCreateTaskAction.execute - failed, error - ${error}`);
       return new GoHighLevelActionResponse(JSON.stringify(error), undefined);
     }
   }

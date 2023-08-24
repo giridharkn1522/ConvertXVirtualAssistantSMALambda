@@ -78,13 +78,15 @@ export class StartBotConversationActionSuccessfulProcessor extends CallLifecycle
       // Step 1 - Open AI lookup intent if it is MainIntent
       if (intentString === 'MainIntent') {
         let mainRequest: string = this.event.ActionData.IntentResult.SessionState.Intent.Slots.MainRequest.Value.OriginalValue;
-        if (mainRequest.toLowerCase() === 'yes') {
+        const positiveResponses: string[] = ['yes', 'yeah', 'sure'];
+        const negativeResponses: string[] = ['no', 'nope', 'nah'];
+        if (positiveResponses.some(positiveResponse => mainRequest.toLowerCase().includes(positiveResponse))) {
           response = this.createPlayAudioResponse(this.config.continuationAudioFileName);
           console.log(`StartBotConversationActionSuccessfulProcessor: Yes matched, 
             playing ${this.config.continuationAudioFileName}, 
             response = ${JSON.stringify(response)}`);
           return Promise.resolve(response);
-        } else if (mainRequest.toLowerCase() === 'no') {
+        } else if (negativeResponses.some(negativeResponse => mainRequest.toLowerCase().includes(negativeResponse))) {
           response = this.createPlayAudioResponse(this.config.goodbyeAudioFileName);
           console.log(`StartBotConversationActionSuccessfulProcessor: No matched, 
             playing ${this.config.goodbyeAudioFileName}, 
@@ -220,7 +222,15 @@ export class StartBotConversationActionSuccessfulProcessor extends CallLifecycle
       this.config,
       goHighLevelContext
     );
-    const status = await goHighLevelActionsProcessor.processGoHighLevelActions(intentString, slotValue);
+    let status = await goHighLevelActionsProcessor.processIntentGoHighLevelActions(intentString, slotValue);
+    if (status !== '200') {
+      console.log(`processGoHighLevelActions: processGoHighLevelActions failed, status = ${status}`);
+      success = false;
+    } else {
+      console.log(`processGoHighLevelActions: processGoHighLevelActions completed, status = ${status}`);
+    }
+
+    status = await goHighLevelActionsProcessor.processSlotGoHighLevelActions(intentString, slotValue);
     if (status !== '200') {
       console.log(`processGoHighLevelActions: processGoHighLevelActions failed, status = ${status}`);
       success = false;

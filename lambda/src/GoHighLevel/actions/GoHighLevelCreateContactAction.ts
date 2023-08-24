@@ -18,6 +18,7 @@ export class GoHighLevelCreateContactAction extends GoHighLevelAction {
   
   async execute(): Promise<GoHighLevelActionResponse> {
     try {
+      console.log(`GoHighLevelCreateContactAction.execute - start, phone = ${this.phone}`);
       const {data} = await axios.post('https://rest.gohighlevel.com/v1/contacts/', {
         //"email": "john@deo.com",
         "phone": this.phone,
@@ -47,11 +48,11 @@ export class GoHighLevelCreateContactAction extends GoHighLevelAction {
           }
       });
       
-      console.log(`Create contact response - ${data}`);
+      console.log(`GoHighLevelCreateContactAction.execute - success, contact = ${JSON.stringify(data)}`);
       this.contact = data.contact?? undefined;
       return new GoHighLevelActionResponse('200', this.contact);
     } catch (error) {
-      console.log(`Create contact failed, error - ${error}`);
+      console.log(`GoHighLevelCreateContactAction.execute - failed, error = ${error}`);
       return new GoHighLevelActionResponse(JSON.stringify(error), undefined);
     }
   }

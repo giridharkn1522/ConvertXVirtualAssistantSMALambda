@@ -1,5 +1,5 @@
-import { dentistVirtualAssistantConfig } from "../CommonTestConfiguration";
-import { PlayAudioActionFailedProcessor } from "./PlayAudioActionFailedProcessor";
+import { dentistVirtualAssistantConfig } from "../../../src/CallLifecycleEventProcessors/CommonTestConfiguration";
+import { PlayAudioActionFailedProcessor } from "../../../src/CallLifecycleEventProcessors/ActionFailedProcessors/PlayAudioActionFailedProcessor";
 
 const basePlayAudioActionFailedEvent = {
   SchemaVersion: "1.0",
@@ -36,6 +36,19 @@ const basePlayAudioActionFailedEvent = {
     ]
   }
 };
+
+jest.mock('../../../src/utils/DynamoDBTableClient', () => {
+  return {
+    DynamoDBTableClient: jest.fn().mockImplementation(() => {
+      return {
+        getConfig: (phoneNumber: string) => {
+          console.log(`In mock DynamoDBTableClient.getConfig, phoneNumber = ${phoneNumber}`);
+          return Promise.resolve(dentistVirtualAssistantConfig);
+        }
+      };
+    })
+  }
+});
 
 test('Tests PlayAudioActionFailedProcessor - audio file not found', async () => {
   const processor = new PlayAudioActionFailedProcessor(

@@ -1,3 +1,4 @@
+import { VirtualAssistantGoHighLevelAction } from "./VirtualAssistantGoHighLevelAction";
 import { VirtualAssistantIntent } from "./VirtualAssistantIntent";
 
 export class VirtualAssistantConfiguration {
@@ -10,18 +11,22 @@ export class VirtualAssistantConfiguration {
   subsequentAudioFileName: string;
   continuationAudioFileName: string;
   businessContextForOpenAI: string;
+  callStartGoHighLevelActions: VirtualAssistantGoHighLevelAction[];
+  callEndGoHighLevelActions: VirtualAssistantGoHighLevelAction[];
   intents: VirtualAssistantIntent[];
 
   constructor(goHighLevelAPIKey: string, 
-    lexBotAliasArn: string, 
-    mediaFilesBucketName: string, 
-    welcomeAudioFileName: string, 
-    goodbyeAudioFileName: string, 
-    fallbackAudioFileName: string, 
-    subsequentAudioFileName: string, 
-    continuationAudioFileName: string,
-    businessContextForOpenAI: string,
-    intents: VirtualAssistantIntent[]) {
+      lexBotAliasArn: string, 
+      mediaFilesBucketName: string, 
+      welcomeAudioFileName: string, 
+      goodbyeAudioFileName: string, 
+      fallbackAudioFileName: string, 
+      subsequentAudioFileName: string, 
+      continuationAudioFileName: string,
+      businessContextForOpenAI: string,
+      callStartGoHighLevelActions: VirtualAssistantGoHighLevelAction[],
+      callEndGoHighLevelActions: VirtualAssistantGoHighLevelAction[],
+      intents: VirtualAssistantIntent[]) {
     this.goHighLevelAPIKey = goHighLevelAPIKey;
     this.lexBotAliasArn = lexBotAliasArn;
     this.mediaFilesBucketName = mediaFilesBucketName;
@@ -31,6 +36,8 @@ export class VirtualAssistantConfiguration {
     this.subsequentAudioFileName = subsequentAudioFileName;
     this.continuationAudioFileName = continuationAudioFileName;
     this.businessContextForOpenAI = businessContextForOpenAI;
+    this.callStartGoHighLevelActions = callStartGoHighLevelActions;
+    this.callEndGoHighLevelActions = callEndGoHighLevelActions;
     this.intents = intents;
   }
 
@@ -47,6 +54,8 @@ export class VirtualAssistantConfiguration {
       json.subsequentAudioFileName,
       json.continuationAudioFileName,
       json.businessContextForOpenAI,
+      json.callStartGoHighLevelActions,
+      json.callEndGoHighLevelActions,
       intents);
   }
 }

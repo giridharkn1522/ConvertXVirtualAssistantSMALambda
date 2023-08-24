@@ -1,3 +1,4 @@
+import { GoHighLevelActionsProcessor } from "../GoHighLevel/GoHighLevelActionsProcessor";
 import { GoHighLevelContextData } from "../GoHighLevel/GoHighLevelContextData";
 import { GoHighLevelCreateContactAction } from "../GoHighLevel/actions/GoHighLevelCreateContactAction";
 import { GoHighLevelLookupContactAction } from "../GoHighLevel/actions/GoHighLevelLookupContactAction";
@@ -58,6 +59,14 @@ export class IncomingCallProcessor extends CallLifecycleEventProcessor {
     response.TransactionAttributes = {
       'goHighLevelContactId': goHighLevelContext.contact?.id
     };
+
+    const goHighLevelActionsProcessor = new GoHighLevelActionsProcessor(this.config, goHighLevelContext);
+    const status = await goHighLevelActionsProcessor.processCallStartGoHighLevelActions();
+    if (status !== '200') {
+      console.log(`IncomingCallProcessor.processLifecycleEvent: processCallStartGoHighLevelActions failed, status = ${status}`);
+    } else {
+      console.log(`IncomingCallProcessor.processLifecycleEvent: processCallStartGoHighLevelActions completed, status = ${status}`);
+    }
   
     return Promise.resolve(response);
   }

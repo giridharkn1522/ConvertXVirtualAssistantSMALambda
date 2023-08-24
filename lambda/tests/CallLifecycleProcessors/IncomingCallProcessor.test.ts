@@ -1,7 +1,7 @@
-import { GoHighLevelContextData } from "../GoHighLevel/GoHighLevelContextData";
-import { GoHighLevelActionResponse } from "../GoHighLevel/models/GoHighLevelActionResponse";
-import { dentistVirtualAssistantConfig, goHighLevelContact } from "./CommonTestConfiguration";
-import { IncomingCallProcessor } from "./IncomingCallProcessor";
+import { GoHighLevelContextData } from "../../src/GoHighLevel/GoHighLevelContextData";
+import { GoHighLevelActionResponse } from "../../src/GoHighLevel/models/GoHighLevelActionResponse";
+import { dentistVirtualAssistantConfig, goHighLevelContact } from "../../src/CallLifecycleEventProcessors/CommonTestConfiguration";
+import { IncomingCallProcessor } from "../../src/CallLifecycleEventProcessors/IncomingCallProcessor";
 
 const baseIncomingCallEvent = {
   SchemaVersion: "1.0",
@@ -29,7 +29,20 @@ const baseIncomingCallEvent = {
   }
 };
 
-jest.mock('../GoHighLevel/GoHighLevelContextData', () => {
+jest.mock('../../src/utils/DynamoDBTableClient', () => {
+  return {
+    DynamoDBTableClient: jest.fn().mockImplementation(() => {
+      return {
+        getConfig: (phoneNumber: string) => {
+          console.log(`In mock DynamoDBTableClient.getConfig, phoneNumber = ${phoneNumber}`);
+          return Promise.resolve(dentistVirtualAssistantConfig);
+        }
+      };
+    })
+  }
+});
+
+jest.mock('../../src/GoHighLevel/GoHighLevelContextData', () => {
   return {
     GoHighLevelContextData: jest.fn().mockImplementation(() => {
       return {
@@ -43,7 +56,7 @@ jest.mock('../GoHighLevel/GoHighLevelContextData', () => {
   }
 });
 
-jest.mock('../GoHighLevel/actions/GoHighLevelLookupContactAction', () => {
+jest.mock('../../src/GoHighLevel/actions/GoHighLevelLookupContactAction', () => {
   return {
     GoHighLevelLookupContactAction: jest.fn().mockImplementation(() => {
       return {
@@ -64,7 +77,7 @@ jest.mock('../GoHighLevel/actions/GoHighLevelLookupContactAction', () => {
   }
 });
 
-jest.mock('../GoHighLevel/actions/GoHighLevelCreateContactAction', () => {
+jest.mock('../../src/GoHighLevel/actions/GoHighLevelCreateContactAction', () => {
   return {
     GoHighLevelCreateContactAction: jest.fn().mockImplementation(() => {
       return {
@@ -80,6 +93,33 @@ jest.mock('../GoHighLevel/actions/GoHighLevelCreateContactAction', () => {
             '200', 
             goHighLevelContact));
         }
+      };
+    })
+  }
+});
+
+jest.mock('../../src/GoHighLevel/GoHighLevelActionsProcessor', () => {
+  return {
+    GoHighLevelActionsProcessor: jest.fn().mockImplementation(() => {
+      return {
+        config: dentistVirtualAssistantConfig,
+        context: new GoHighLevelContextData('goHighLevelAPIKey'),
+        processCallStartGoHighLevelActions: (intentMatchString: string, ) => {
+          console.log('In mock GoHighLevelActionsProcessor.processCallStartGoHighLevelActions');
+          return Promise.resolve('200');
+        },
+        processIntentGoHighLevelActions: (intentMatchString: string, slotValue: string) => {
+          console.log('In mock GoHighLevelActionsProcessor.processIntentGoHighLevelActions');
+          return Promise.resolve('200');
+        },
+        processSlotGoHighLevelActions: (intentMatchString: string, slotValue: string) => {
+          console.log('In mock GoHighLevelActionsProcessor.processSlotGoHighLevelActions');
+          return Promise.resolve('200');
+        },
+        processCallEndGoHighLevelActions: (intentMatchString: string, ) => {
+          console.log('In mock GoHighLevelActionsProcessor.processCallEndsHighLevelActions');
+          return Promise.resolve('200');
+        },
       };
     })
   }

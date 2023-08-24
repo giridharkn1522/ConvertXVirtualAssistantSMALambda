@@ -1,5 +1,5 @@
-import { dentistVirtualAssistantConfig } from "../CommonTestConfiguration";
-import { PlayAudioActionSuccessfulProcessor } from "./PlayAudioActionSuccessfulProcessor";
+import { PlayAudioActionSuccessfulProcessor } from "../../../src/CallLifecycleEventProcessors/ActionSuccessfulProcessors/PlayAudioActionSuccessfulProcessor";
+import { dentistVirtualAssistantConfig } from "../../../src/CallLifecycleEventProcessors/CommonTestConfiguration";
 
 const basePlayAudioActionSuccessfulEvent = {
   SchemaVersion: "1.0",
@@ -41,6 +41,19 @@ const basePlayAudioActionSuccessfulEvent = {
     ]
   }
 }
+
+jest.mock('../../../src/utils/DynamoDBTableClient', () => {
+  return {
+    DynamoDBTableClient: jest.fn().mockImplementation(() => {
+      return {
+        getConfig: (phoneNumber: string) => {
+          console.log(`In mock DynamoDBTableClient.getConfig, phoneNumber = ${phoneNumber}`);
+          return Promise.resolve(dentistVirtualAssistantConfig);
+        }
+      };
+    })
+  }
+});
 
 test('Tests PlayAudioActionSuccessfulProcessor - PlayAudio Welcome.wav successful event', async () => {
   const processor = new PlayAudioActionSuccessfulProcessor(

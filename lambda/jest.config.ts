@@ -114,7 +114,12 @@ const config: Config = {
   // projects: undefined,
 
   // Use this configuration option to add custom reporters to Jest
-  // reporters: undefined,
+  "reporters": [
+    "default",
+    ["./node_modules/jest-html-reporter", {
+      "pageTitle": "Test Report"
+    }]
+  ],
 
   // Automatically reset mock state before every test
   // resetMocks: false,
@@ -133,7 +138,8 @@ const config: Config = {
 
   // A list of paths to directories that Jest should use to search for files in
   roots: [
-    "<rootDir>"
+    "<rootDir>/src",
+    "<rootDir>/tests",
   ],
 
   // Allows you to use a custom runner instead of Jest's default test runner

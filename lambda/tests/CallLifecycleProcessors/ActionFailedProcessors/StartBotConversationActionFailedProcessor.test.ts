@@ -1,5 +1,5 @@
-import { dentistVirtualAssistantConfig } from "../CommonTestConfiguration";
-import { StartBotConversationActionFailedProcessor } from "./StartBotConversationActionFailedProcessor";
+import { StartBotConversationActionFailedProcessor } from "../../../src/CallLifecycleEventProcessors/ActionFailedProcessors/StartBotConversationActionFailedProcessor";
+import { dentistVirtualAssistantConfig } from "../../../src/CallLifecycleEventProcessors/CommonTestConfiguration";
 
 const baseStartBotConversationActionFailedEvent = {
   SchemaVersion: "1.0",
@@ -44,6 +44,19 @@ const baseStartBotConversationActionFailedEvent = {
     ]
   }
 };
+
+jest.mock('../../../src/utils/DynamoDBTableClient', () => {
+  return {
+    DynamoDBTableClient: jest.fn().mockImplementation(() => {
+      return {
+        getConfig: (phoneNumber: string) => {
+          console.log(`In mock DynamoDBTableClient.getConfig, phoneNumber = ${phoneNumber}`);
+          return Promise.resolve(dentistVirtualAssistantConfig);
+        }
+      };
+    })
+  }
+});
 
 test('Tests StartBotConversationActionFailedProcessor - MainIntent failed event', async () => {
   const processor = new StartBotConversationActionFailedProcessor(

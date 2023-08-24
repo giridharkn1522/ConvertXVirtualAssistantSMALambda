@@ -14,6 +14,7 @@ export class GoHighLevelGetContactAction extends GoHighLevelAction {
   
   async execute(): Promise<GoHighLevelActionResponse> {
     try {
+      console.log(`GoHighLevelGetContactAction.execute - start, contactId = ${this.contactId}`);
       const {data} = await axios.get(`https://rest.gohighlevel.com/v1/contacts/${this.contactId}`, 
       {
           headers: {
@@ -23,9 +24,10 @@ export class GoHighLevelGetContactAction extends GoHighLevelAction {
       });
       
       this.contact = data.contact;
+      console.log(`GoHighLevelGetContactAction.execute - success, contact = ${JSON.stringify(this.contact)}`);
       return new GoHighLevelActionResponse('200', this.contact);
     } catch (error) {
-      console.log(`getContact failed, error = ${error}`);
+      console.log(`GoHighLevelGetContactAction.execute - failed, error = ${error}`);
       return new GoHighLevelActionResponse(JSON.stringify(error), undefined);
     }
   }

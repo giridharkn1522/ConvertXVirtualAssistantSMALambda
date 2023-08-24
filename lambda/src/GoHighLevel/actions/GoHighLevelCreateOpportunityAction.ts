@@ -13,6 +13,7 @@ export class GoHighLevelCreateOpportunityAction extends GoHighLevelAction {
   }
 
   async execute(): Promise<GoHighLevelActionResponse> {
+    console.log(`GoHighLevelCreateOpportunityAction.execute - start, contactId = ${this.goHighLevelContext.contact.id}`);
     const opportunityData = {
       "title": this.goHighLevelContext.contact.phone,
       "stageId": this.stageId,
@@ -28,10 +29,10 @@ export class GoHighLevelCreateOpportunityAction extends GoHighLevelAction {
             'Authorization': `Bearer ${this.goHighLevelContext.apiKey}`
           }
         });
-      console.log(`Create Opportunity - response = ${JSON.stringify(data)}`);
+      console.log(`GoHighLevelCreateOpportunityAction.execute - success, response = ${JSON.stringify(data)}`);
       return new GoHighLevelActionResponse('200', data);
     } catch (error) {
-      console.log(`CreateOpportunity - failed, error = ${error}`);
+      console.log(`GoHighLevelCreateOpportunityAction.execute - failed, error - ${error}`);
       return new GoHighLevelActionResponse(JSON.stringify(error), undefined);
     }
   }

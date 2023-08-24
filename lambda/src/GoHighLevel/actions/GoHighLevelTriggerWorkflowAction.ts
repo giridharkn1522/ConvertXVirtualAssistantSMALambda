@@ -33,6 +33,8 @@ export class GoHighLevelTriggerWorkflowAction extends GoHighLevelAction {
 
   async execute(): Promise<GoHighLevelActionResponse> {
     try {
+      console.log(`GoHighLevelTriggerWorkflowAction.execute - start, workflowId = ${this.workflowId}`);
+
       if (this.goHighLevelContext.contact === undefined) {
         throw new Error('GoHighLevelTriggerWorkflowAction requires a contact to be set');
       }
@@ -50,9 +52,11 @@ export class GoHighLevelTriggerWorkflowAction extends GoHighLevelAction {
             'Authorization': `Bearer ${this.goHighLevelContext.apiKey}`
           }
         });
-      console.log(`triggerContactWorkflow response = ${JSON.stringify(data)}`);
+      
+      console.log(`GoHighLevelTriggerWorkflowAction.execute - success, response = ${JSON.stringify(data)}`);
       return new GoHighLevelActionResponse('200', data);
     } catch (error) {
+      console.log(`GoHighLevelTriggerWorkflowAction.execute - failed, error = ${error}`);
       return new GoHighLevelActionResponse('Error', undefined);
     }
   }

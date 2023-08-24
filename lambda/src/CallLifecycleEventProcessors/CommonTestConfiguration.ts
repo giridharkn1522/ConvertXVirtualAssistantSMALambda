@@ -11,6 +11,28 @@ export const dentistVirtualAssistantConfig = VirtualAssistantConfiguration.fromJ
   fallbackAudioFileName: 'Fallback.wav',
   subsequentAudioFileName: 'Subsequent.wav',
   continuationAudioFileName: 'Continuation.wav',
+  callStartGoHighLevelActions: [
+    {
+      slotValue: '',
+      actionType: 'CreateOpportunity',
+      actionData: {
+        workflowId: '',
+        pipelineId: 'CCqPjEEgyARbORomS1o0',
+        stageId: 'e9316e60-518c-4d94-b74f-e1deff289a8e',
+      }
+    },
+  ],
+  callEndGoHighLevelActions: [
+    {
+      slotValue: '',
+      actionType: 'CreateOpportunity',
+      actionData: {
+        workflowId: '',
+        pipelineId: 'CCqPjEEgyARbORomS1o0',
+        stageId: 'e9316e60-518c-4d94-b74f-e1deff289a8e',
+      }
+    },
+  ],
   intents: [
     {
       matchString: 'Dental Emergency',
@@ -44,16 +66,11 @@ export const dentistVirtualAssistantConfig = VirtualAssistantConfiguration.fromJ
       goHighLevelActions: [
         {
           slotValue: '',
-          actionType: 'CreateTask',
+          actionType: 'CreateOpportunity',
           actionData: {
             workflowId: '',
-          }
-        },
-        {
-          slotValue: '',
-          actionType: 'TriggerWorkflow',
-          actionData: {
-            workflowId: 'fef5e4b1-8f0e-4281-ad09-6d8c4e086d16',
+            pipelineId: 'oHririVno2ryZYxg1pTs',
+            stageId: '55a74a65-a1df-4b2d-9cae-cd7851782805',
           }
         },
       ],
@@ -111,13 +128,6 @@ export const dentistVirtualAssistantConfig = VirtualAssistantConfiguration.fromJ
       fulfillmentAudioFileName: 'Fulfillment-Voicemail.wav',
       failedAudioFileName: 'Failed-Voicemail.wav',
       goHighLevelActions: [
-        // {
-        //   slotValue: '',
-        //   actionType: 'TriggerWorkflow',
-        //   actionData: {
-        //     workflowId: 'fef5e4b1-8f0e-4281-ad09-6d8c4e086d16',
-        //   }
-        // },
       ],
       slots: [
         {

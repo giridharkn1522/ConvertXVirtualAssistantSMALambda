@@ -2,20 +2,64 @@ import { Handler } from 'aws-lambda';
 import { CallLifecyleEventResponse } from './src/models/CallLifecycleEventResponse';
 import { IncomingCallProcessor } from './src/CallLifecycleEventProcessors/IncomingCallProcessor';
 import { CallLifecycleEventProcessor } from './src/CallLifecycleEventProcessors/CallLifecyleEventProcessor';
-import { dentistVirtualAssistantConfig } from './src/CallLifecycleEventProcessors/CommonTestConfiguration';
 import { PlayAudioActionSuccessfulProcessor } from './src/CallLifecycleEventProcessors/ActionSuccessfulProcessors/PlayAudioActionSuccessfulProcessor';
 import { StartBotConversationActionSuccessfulProcessor } from './src/CallLifecycleEventProcessors/ActionSuccessfulProcessors/StartBotConversationActionSuccessfulProcessor';
 import { PlayAudioActionFailedProcessor } from './src/CallLifecycleEventProcessors/ActionFailedProcessors/PlayAudioActionFailedProcessor';
 import { StartBotConversationActionFailedProcessor } from './src/CallLifecycleEventProcessors/ActionFailedProcessors/StartBotConversationActionFailedProcessor';
+import { SecretsManagerClient } from './src/utils/SecretsManagerClient';
+import { createHangupAction } from './src/models/Actions/HangupAction';
+import { DynamoDB } from 'aws-sdk';
+import { DynamoDBTableClient } from './src/utils/DynamoDBTableClient';
+import { VirtualAssistantConfiguration } from './src/models/VirtualAssistantConfiguration';
 
 export const handler: Handler = async (event: any) => {
   console.log('ConvertX SMA Lambda Incoming event - ', JSON.stringify(event));
   let response: CallLifecyleEventResponse;
   let callLifecycleProcessor: CallLifecycleEventProcessor;
 
-  // TODO: Lookup config from DDB
-  let config = dentistVirtualAssistantConfig;
+  // Load OPENAI_API_KEY from secrets manager
+  if (process.env.OPENAI_API_KEY_SECRET_NAME === undefined) {
+    response = new CallLifecyleEventResponse();
+    response.addAction(createHangupAction('0', ''));
+    console.log('OPENAI_API_KEY_SECRET_NAME is undefined');
+    return response;
+  }
+  const secretKeys: string[] = [
+    process.env.OPENAI_API_KEY_SECRET_NAME??'',
+  ];
+  const secretsManagerClient = new SecretsManagerClient(secretKeys);
+  if (!await secretsManagerClient.loadSecrets()) {
+    response = new CallLifecyleEventResponse();
+    response.addAction(createHangupAction('0', ''));
+    console.log('Error loading secrets from secrets manager');
+    return response;
+  }
+  const secretString = secretsManagerClient.secrets.get(process.env.OPENAI_API_KEY_SECRET_NAME??'')??'';
+  process.env.OPENAI_API_KEY = JSON.parse(secretString).ConvertXVirtualAssistantOpenAIAPIKey;
 
+  // Lookup config for the To phone number from DDB
+  if (event.CallDetails === undefined ||
+      event.CallDetails.Participants === undefined ||
+      event.CallDetails.Participants.length === 0 ||
+      event.CallDetails.Participants[0].To === undefined) {
+    console.log('CallDetails.Participants[0].To is undefined, hanging up');
+    response = new CallLifecyleEventResponse();
+    response.addAction(createHangupAction('0', ''));
+    return response;
+  }
+
+  const ddbTableClient = new DynamoDBTableClient();
+  const config: VirtualAssistantConfiguration | undefined = await ddbTableClient.getConfig(
+    event.CallDetails.Participants[0].To);
+  if (config === undefined) {
+    console.log('Config not found in DDB, hanging up');
+    response = new CallLifecyleEventResponse();
+    response.addAction(createHangupAction('0', ''));
+    return response;
+  }
+  console.log('Config loaded from DDB - ', JSON.stringify(config));
+
+  // Process the event
   switch (event.InvocationEventType) {
     case 'NEW_INBOUND_CALL':
       console.log('NEW_INBOUND_CALL');

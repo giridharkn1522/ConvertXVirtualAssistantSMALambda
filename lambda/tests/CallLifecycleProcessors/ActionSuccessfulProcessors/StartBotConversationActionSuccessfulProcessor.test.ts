@@ -1,7 +1,7 @@
-import { VirtualAssistantConfiguration } from "../../models/VirtualAssistantConfiguration";
-import { GoHighLevelContextData } from "../../GoHighLevel/GoHighLevelContextData";
-import { GoHighLevelActionResponse } from "../../GoHighLevel/models/GoHighLevelActionResponse";
-import { dentistVirtualAssistantConfig, goHighLevelContact } from "../CommonTestConfiguration";
+import { VirtualAssistantConfiguration } from "../../../src/models/VirtualAssistantConfiguration";
+import { GoHighLevelContextData } from "../../../src/GoHighLevel/GoHighLevelContextData";
+import { GoHighLevelActionResponse } from "../../../src/GoHighLevel/models/GoHighLevelActionResponse";
+import { dentistVirtualAssistantConfig, goHighLevelContact } from "../../../src/CallLifecycleEventProcessors/CommonTestConfiguration";
 
 const baseStartBotConversationActionSuccessfulEvent = {
   InvocationEventType: 'ACTION_SUCCESSFUL',
@@ -32,7 +32,20 @@ const baseStartBotConversationActionSuccessfulEvent = {
   },
 }
 
-jest.mock('../../GoHighLevel/GoHighLevelContextData', () => {
+jest.mock('../../../src/utils/DynamoDBTableClient', () => {
+  return {
+    DynamoDBTableClient: jest.fn().mockImplementation(() => {
+      return {
+        getConfig: (phoneNumber: string) => {
+          console.log(`In mock DynamoDBTableClient.getConfig, phoneNumber = ${phoneNumber}`);
+          return Promise.resolve(dentistVirtualAssistantConfig);
+        }
+      };
+    })
+  }
+});
+
+jest.mock('../../../src/GoHighLevel/GoHighLevelContextData', () => {
   return {
     GoHighLevelContextData: jest.fn().mockImplementation(() => {
       return {
@@ -45,7 +58,7 @@ jest.mock('../../GoHighLevel/GoHighLevelContextData', () => {
     })
   }
 });
-jest.mock('../../GoHighLevel/actions/GoHighLevelGetContactAction', () => {
+jest.mock('../../../src/GoHighLevel/actions/GoHighLevelGetContactAction', () => {
   return {
     GoHighLevelGetContactAction: jest.fn().mockImplementation(() => {
       return {
@@ -65,22 +78,34 @@ jest.mock('../../GoHighLevel/actions/GoHighLevelGetContactAction', () => {
     })
   }
 });
-jest.mock('../../GoHighLevel/GoHighLevelActionsProcessor', () => {
+jest.mock('../../../src/GoHighLevel/GoHighLevelActionsProcessor', () => {
   return {
     GoHighLevelActionsProcessor: jest.fn().mockImplementation(() => {
       return {
         config: dentistVirtualAssistantConfig,
         context: new GoHighLevelContextData('goHighLevelAPIKey'),
-        processGoHighLevelActions: (intentMatchString: string) => {
-          console.log('In mock GoHighLevelActionsProcessor.processGoHighLevelActions');
+        processCallStartGoHighLevelActions: (intentMatchString: string, ) => {
+          console.log('In mock GoHighLevelActionsProcessor.processCallStartGoHighLevelActions');
           return Promise.resolve('200');
-        }
+        },
+        processIntentGoHighLevelActions: (intentMatchString: string, slotValue: string) => {
+          console.log('In mock GoHighLevelActionsProcessor.processIntentGoHighLevelActions');
+          return Promise.resolve('200');
+        },
+        processSlotGoHighLevelActions: (intentMatchString: string, slotValue: string) => {
+          console.log('In mock GoHighLevelActionsProcessor.processSlotGoHighLevelActions');
+          return Promise.resolve('200');
+        },
+        processCallEndGoHighLevelActions: (intentMatchString: string, ) => {
+          console.log('In mock GoHighLevelActionsProcessor.processCallEndsHighLevelActions');
+          return Promise.resolve('200');
+        },
       };
     })
   }
 });
 
-jest.mock('../../utils/OpenAIIntentProcessor', () => {
+jest.mock('../../../src/utils/OpenAIIntentProcessor', () => {
   return {
     OpenAIIntentProcessor: jest.fn().mockImplementation(() => {
       return {
@@ -107,8 +132,8 @@ jest.mock('../../utils/OpenAIIntentProcessor', () => {
   }
 });
 
-import { StartBotConversationActionSuccessfulProcessor } from "./StartBotConversationActionSuccessfulProcessor";
-import { VirtualAssistantIntentSlot } from "../../models/VirtualAssistantIntentSlot";
+import { StartBotConversationActionSuccessfulProcessor } from "../../../src/CallLifecycleEventProcessors/ActionSuccessfulProcessors/StartBotConversationActionSuccessfulProcessor";
+import { VirtualAssistantIntentSlot } from "../../../src/models/VirtualAssistantIntentSlot";
 
 test('Tests StartBotConversationActionSuccessfulProcessor - invalid event', async () => {
   const processor = new StartBotConversationActionSuccessfulProcessor(
